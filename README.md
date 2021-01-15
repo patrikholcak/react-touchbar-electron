@@ -1,139 +1,160 @@
-# React TouchBar Electron
-> Proof of concept
+![](https://repository-images.githubusercontent.com/93372157/8c28ef00-575d-11eb-83fd-8840c4de6be3)
 
-Using TouchBar has never been easier — define custom TouchBar layout in your React routes or components and have it automagically mounted. Easily map events, directly update state or dispatch actions.
+# React TouchBar Electron
+
+Define custom TouchBar layouts in your React components and have it automatically set on component mount. Easily map events, directly update state and dispatch actions.
+
+> _Note:_ `<Popover>` and `<Group>` are broken in Electron 11. See this issue for reference https://github.com/electron/electron/issues/26761
 
 ## Example
-```js
-import { TouchBar, Button, Slider } from 'react-touchbar-electron';
 
-const App = ({ sliderValue, onSliderChange }) => (
-  <div>
-    <TouchBar>
-      <Button label="Do action!" onClick={() => alert('Yo!')} />
-      <Slider value={sliderValue} onChange={onSliderChange} />
-    </TouchBar>
+```tsx
+import * as React from "react";
+import { TouchBar, Button, Slider } from "react-touchbar-electron";
 
-    <h1>App</h1>
-    …
-  </div>
-)
+function App() {
+  const [sliderValue, onSliderChange] = React.useState(50);
+
+  return (
+    <>
+      <TouchBar>
+        <Button label="Show alert" onClick={() => alert("Hey!")} />
+        <Slider value={sliderValue} onChange={onSliderChange} />
+      </TouchBar>
+      <div>
+        <h1>App</h1>…
+      </div>
+    </>
+  );
+}
 
 export default App;
 ```
 
-## Disclaimer
-This is an experimental software, distributed as is, without any warranty or support.
-
-## Requirements
-- `react@^16.0.0-alpha` or newer. Older versions are not supported due to the way they render children.
-- `electron@^1.6.3` or newer. Older versions do not support TouchBar.
-
 ## Installation
-```
-$ yarn add react-touchbar-electron
 
-$ yarn add react@^16.0.0-alpha.12
-$ yarn add react-dom@^16.0.0-alpha.12
-$ yarn add electron@^1.7.2
+1. `npm i react-touchbar-electron`
+
+2. Edit your electron `main` script:
+
+```ts
+import { decorateWindow } from "react-touchbar-electron/decorate-window";
+
+const mainWindow = new BrowserWindow({
+  // Make sure `nodeIntegration` is enabled
+  webPreferences: {
+    nodeIntegration: true,
+  },
+  // …
+});
+
+decorateWindow(mainWindow);
 ```
 
-Edit your electron `main.js`:
+3. edit your electron `renderer` script:
 
 ```js
-const { touchBarWrapper } = require('react-touchbar-electron');
+import { TouchBar, Button } from "react-touchbar-electron";
 
-mainWindow = new BrowserWindow({ … });
-touchBarWrapper(mainWindow);
+function App() {
+  return (
+    <TouchBar>
+      <Button label="It works!" />
+    </TouchBar>
+  );
+}
 ```
-
-Edit your electron `renderer.js`
-
-```js
-import { TouchBarProvider } from 'react-touchbar-electron';
-
-ReactDOM.render(
-  <TouchBarProvider>
-    <App />
-  </TouchBarProvider>,
-  rootEl
-);
-```
-
-## Known bugs
-- removing and appending items might not work correctly - this will be solved by rendering items using custom react fiber renderer.
 
 ## How it works
-TouchBar implements 2 types of objects - groups and items. This library simply
-creates an object tree using contexts, which is then sent to the main process,
-where the TouchBar is constructed.
 
+the `TouchBar` component is a context provider, which communicates with the main thread using ipc. Each child component then "registers" itself as a TouchBar item.
 
 ## API
-The api is basically the same as [electron](https://github.com/electron/electron/blob/master/docs/api/touch-bar.md)
-TouchBar API.
 
-- #### TouchBar
-  - clearOnUnmount: `boolean` — destroy TouchBar instance on unmount, default
-    `true`
+The api pretty much copies the official [electron](https://github.com/electron/electron/blob/master/docs/api/touch-bar.md)
+TouchBar API with some exceptions to events, to preserve React conventions:
 
-- #### Button
-  - label: `string`
-  - backgroundColor: `string`, hex
-  - icon: `string` — all icons are resolved from `process.cwd()`
-  - iconPosition: `'left' | 'right' | 'overlay'`
-  - onClick: `() => any`
+- `click` & `highlight` are `onClick` in your components
+- `change` & `select` are `onChange` in your components
 
-- #### ColorPicker
-  - availableColors: `Array<string>`
-  - selectedColor: `string`
-  - onChange: `(activeColor: string) => any`
+> _Note:_ All `icon`s are resolved from the directory where your built electron `main` is. If you `import` your images in your component via webpack/parcel/… they should be resolved correclty.
 
-- #### Group
-  - groups together one or more TouchBar items
+### TouchBar
 
-- #### Label
-  - label: `string`
-  - textColor: `string`
+- id: `string` - A unique identifier for this TouchBar layout, useful when restoring prev layout.
+- prevId: `string` — Restore a previous instance of TouchBar after the actual one is unmounted (eg. dialogs, popovers…)
+- children: `ReactNode` - TouchBar items.
 
-- #### Popover
-  - label: `string`
-  - icon: `string` — all icons are resolved from `process.cwd()`
-  - showCloseButton: `boolean`
+### Button
 
-- #### Scrubber
-  - selectedStyle: `'background' | 'outline'`
-  - overlayStyle: `'background' | 'outline'`
-  - showArrowButtons: `boolean`
-  - mode: `'fixed' | 'free'`
-  - onChange: `(item: any) => any`
-  - onClick: `(item: any) => any`
+- label: `string` - Button text.
+- accessibilityLabel: `string` - A short description of the button for use by screenreaders like VoiceOver.
+- enabled: `boolean` - Whether the button is in an enabled state.
+- backgroundColor: `string` - Button background color in hex format.
+- icon: `string` — Path to an icon that will be displayed.
+- iconPosition: `"left" | "right" | "overlay"` - Position of icon on the button. Only applicable if `icon` present.
+- onClick: `() => any` - Function to call when the button is clicked.
 
-- #### ScrubberItem
-  - label: `string`
-  - icon: `string` — all icons are resolved from `process.cwd()`
+### ColorPicker
 
-- #### SegmentedControl
-    - segmentStyle: `'automatic' | 'rounded' | 'textured-rounded' |
-      'round-rect' | 'textured-square' | 'capsule' | 'small-square' | 'separated'`
-    - mode: `'single' | 'multiple' | 'buttons'`
-    - selectedIndex: `number`
-    - onChange: `(selectedIndex: number, isSelected: boolean) => any`
+- availableColors: `string[]` - Array of hex color strings to appear as possible colors to select.
+- selectedColor: `string` - The selected hex color in the picker.
+- onChange: `(color: string) => any` - The color that the user selected from the picker.
 
-- #### Segment
-  - label: `string`
-  - icon: `string` — all icons are resolved from `process.cwd()`
-  - enabled: `boolean`
+### Group
 
-- #### Slider
-  - label: `string`
-  - value: `number`
-  - minValue: `number`
-  - maxValue: `number`
-  - onChange: `(value: number) => any`
+groups together one or more TouchBar items.
 
-- #### Spacer
-  - size: `'small' | 'large' | 'flexible'`
+- children: `ReactNode` - TouchBar items.
+
+### Label
+
+- label: `string` - Text to display.
+- accessibilityLabel: `string` - A short description of the label for use by screenreaders like VoiceOver.
+- textColor: `string` - Hex color of the label.
+
+### Popover
+
+- label: `string` - Popover button text.
+- icon: `string` — Popover button icon.
+- showCloseButton: `boolean` - Display a close button on the left of the popover.
+- children: `ReactNode` - Popover items.
+
+### Scrubber
+
+- selectedStyle: `"none" | "background" | "outline"` - Selected item style.
+- overlayStyle: `"none" | "background" | "outline"` - Selected overlay item style.
+- showArrowButtons: `boolean`
+- mode: `"free" | "fixed"`
+- items: `Array<{ label: string; icon?: string }>` - An array of items to place in this scrubber.
+- onChange: `(selectedIndex: number) => any` - Called when the user taps an item that was not the last tapped item.
+- onClick: `(highlightedIndex: number) => any` - Called when the user taps any item.
+
+### SegmentedControl
+
+- segmentStyle: `"automatic" | "rounded" | "textured-rounded" | "round-rect" | "textured-square" | "capsule" | "small-square" | "separated"` - Style of the segments
+- mode: `"single" | "multiple" | "buttons"` - The selection mode of the control
+- segments: `Array<{ label: string; icon?: string; enabled?: boolean }>` - An array of segments to place in this control.
+- selectedIndex: `number` - The index of the currently selected segment.
+- onChange: `(selectedIndex: number, isSelected: boolean) => any` - Callback that fires when user changes the value.
+
+### Slider
+
+- label: `string` - Label text.
+- value: `number` - Selected value.
+- minValue: `number` - Minimum value.
+- maxValue: `number` - Maximum value.
+- onChange: `(newValue: number) => any` - Function to call when the slider is changed.
+
+### Spacer
+
+- size: `"small" | "large" | "flexible"` - Size of spacer.
+
+## Debugging
+
+- Start the electron main process with `TOUCHBAR_DEBUG=true` and the library will let you know what’s going on.
+- Each component has an `id` prop which could be used for debugging. This id must be unique to the current TouchBar instance.
 
 ## Licence
-MIT
+
+[ISC](./LICENSE.md)

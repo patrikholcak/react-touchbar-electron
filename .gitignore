@@ -1,13 +1,4 @@
-# OS Cache
-.DS_Store
-Thumbs.db
-
-# npm
-npm-debug.log
+example/.parcel
 node_modules
-
-# build
-/build
-
-# misc
-.eslintcache
+.cache
+dist
