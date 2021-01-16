@@ -1,1 +1,4 @@
+.github
 example
+release.config.js
+tsconfig.json

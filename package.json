@@ -1,7 +1,6 @@
 {
   "name": "react-touchbar-electron",
   "version": "0.0.1",
-  "type": "module",
   "description": "Declare TouchBar using React in your Electron renderer",
   "license": "ISC",
   "main": "dist/index.js",
@@ -37,7 +36,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit --pretty",
     "example": "parcel example/index.html --port 1234 --out-dir example/.parcel",
-    "electron": "npm run electron:main && electron example/.parcel/main.cjs",
-    "electron:main": "parcel build example/main.ts --out-dir example/.parcel --out-file main.cjs --target node"
+    "electron": "npm run electron:main && electron example/.parcel/main.js",
+    "electron:main": "parcel build example/main.ts --out-dir example/.parcel --out-file main.js --target node"
   }
 }

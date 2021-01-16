@@ -44,7 +44,7 @@ export function uuid(): string {
   // set the variant bit to "don't care" (yes, the RFC calls it that)
   u[8] = (u[8] & 0xbf) | 0x80;
 
-  return [...u]
+  return Array.from(u)
     .map((num, i) =>
       [3, 5, 7, 9].includes(i) ? `${num.toString(16)}-` : num.toString(16)
     )
