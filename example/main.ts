@@ -1,4 +1,5 @@
 import { BrowserWindow, app } from "electron";
+import { join } from "path";
 import { decorateWindow } from "../src/decorate-window";
 
 app.on("ready", () => {
@@ -7,7 +8,9 @@ app.on("ready", () => {
     height: 600,
     show: false,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: join(__dirname, "preload.js"),
     },
   });
 

@@ -37,6 +37,6 @@
     "typecheck": "tsc --noEmit --pretty",
     "example": "parcel example/index.html --port 1234 --out-dir example/.parcel",
     "electron": "npm run electron:main && electron example/.parcel/main.js",
-    "electron:main": "parcel build example/main.ts --out-dir example/.parcel --out-file main.js --target node"
+    "electron:main": "parcel build example/*.ts --out-dir example/.parcel --target node"
   }
 }
