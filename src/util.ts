@@ -9,7 +9,9 @@ export function debug(...message: any[]) {
 }
 
 export function getIpcRenderer(): IpcRenderer {
-  const ipcRenderer = globalThis.require?.("electron").ipcRenderer;
+  const ipcRenderer =
+    (globalThis as any).touchbarAPI ||
+    globalThis.require?.("electron").ipcRenderer;
 
   if (!ipcRenderer) {
     log(

@@ -39,3 +39,8 @@ export interface TouchBarItem {
 //   id: string;
 //   type: string;
 // }
+
+export type IPCListenerFunction = (
+  event: Electron.IpcRendererEvent,
+  ...args: any[]
+) => void;
