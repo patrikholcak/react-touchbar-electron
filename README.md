@@ -38,12 +38,14 @@ export default App;
 2. Edit your electron `main` script:
 
 ```ts
+import { join } from "path";
 import { decorateWindow } from "react-touchbar-electron/decorate-window";
 
 const mainWindow = new BrowserWindow({
-  // Make sure `nodeIntegration` is enabled
   webPreferences: {
-    nodeIntegration: true,
+    nodeIntegration: false,
+    contextIsolation: true,
+    preload: join(__dirname, "preload.js"),
   },
   // …
 });
@@ -51,7 +53,16 @@ const mainWindow = new BrowserWindow({
 decorateWindow(mainWindow);
 ```
 
-3. edit your electron `renderer` script:
+3. edit your electron `preload` script:
+
+```js
+import { preload } from "react-touchbar-electron/preload";
+
+// register ipc touchbarAPI on `globalThis`
+preload();
+```
+
+4. edit your electron `renderer` script:
 
 ```js
 import { TouchBar, Button } from "react-touchbar-electron";
@@ -67,7 +78,7 @@ function App() {
 
 ## How it works
 
-the `TouchBar` component is a context provider, which communicates with the main thread using ipc. Each child component then "registers" itself as a TouchBar item.
+the `TouchBar` component is a context provider, which communicates with the main thread using ipc with methods exposed in the preload script. Each child component then "registers" itself as a TouchBar item.
 
 ## API
 
