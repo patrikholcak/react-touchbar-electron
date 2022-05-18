@@ -94,6 +94,7 @@ TouchBar API with some exceptions to events, to preserve React conventions:
 
 - id: `string` - A unique identifier for this TouchBar layout, useful when restoring prev layout.
 - prevId: `string` — Restore a previous instance of TouchBar after the actual one is unmounted (eg. dialogs, popovers…)
+- enabled: `"auto" | boolean` - Disable touchbar, if not set or set to auto it will auto detect if it is in an electron frame.
 - children: `ReactNode` - TouchBar items.
 
 ### Button

@@ -1,26 +1,28 @@
 import { ipcRenderer, contextBridge } from "electron";
-import { IpcEvent, IPCListenerFunction } from "./types";
+import { IpcEvent, TouchBarAPI } from "./types";
 
 export const preload = () => {
   const eventTypes: string[] = Object.values(IpcEvent);
 
-  contextBridge.exposeInMainWorld("touchbarAPI", {
-    send(channel: string, ...args: any[]) {
+  const touchbarAPI: TouchBarAPI = {
+    send(channel, ...args) {
       if (eventTypes.includes(channel)) {
         ipcRenderer.send(channel, ...args);
       }
     },
-    on(channel: string, listener: IPCListenerFunction) {
+    on(channel, listener) {
       if (eventTypes.includes(channel)) {
         ipcRenderer.on(channel, listener);
-        return this;
       }
+      return this;
     },
-    removeListener(channel: string, listener: IPCListenerFunction) {
+    removeListener(channel, listener) {
       if (eventTypes.includes(channel)) {
         ipcRenderer.removeListener(channel, listener);
-        return this;
       }
+      return this;
     },
-  });
+  };
+
+  contextBridge.exposeInMainWorld("touchbarAPI", touchbarAPI);
 };

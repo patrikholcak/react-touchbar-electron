@@ -44,3 +44,12 @@ export type IPCListenerFunction = (
   event: Electron.IpcRendererEvent,
   ...args: any[]
 ) => void;
+
+export interface TouchBarAPI {
+  send: (channel: string, ...args: any[]) => void;
+  on: (channel: string, listener: IPCListenerFunction) => TouchBarAPI;
+  removeListener: (
+    channel: string,
+    listener: IPCListenerFunction
+  ) => TouchBarAPI;
+}

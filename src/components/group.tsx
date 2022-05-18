@@ -24,6 +24,8 @@ function GroupComponent({ id, children, ...props }: GroupProps) {
       id={componentId.current}
       // @ts-expect-error - "private property"
       registerOnly
+      // enable to always render group
+      enabled={true}
     >
       {children}
     </TouchBar>

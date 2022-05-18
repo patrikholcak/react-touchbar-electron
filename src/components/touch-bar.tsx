@@ -1,10 +1,10 @@
 import * as React from "react";
 import { EventEmitter } from "events";
-import { getIpcRenderer, uuid } from "../util";
+import { getTouchbarAPI, isElectron, uuid } from "../util";
 import { TouchBarContext } from "../context";
 import { IpcEvent, EventPayload, TouchBarItem } from "../types";
 
-const ipcRenderer = getIpcRenderer();
+const touchbarAPI = getTouchbarAPI();
 
 export interface TouchBarProps {
   /**
@@ -16,10 +16,17 @@ export interface TouchBarProps {
 
   prevId?: string;
 
+  enabled?: "auto" | boolean;
+
   children: React.ReactNode;
 }
 
 function TouchBarComponent(props: TouchBarProps) {
+  /**
+   * Set-up a state which tracks if the context provider should render
+   */
+  const [enabled, setEnabled] = React.useState<boolean>(false);
+
   /**
    * Set-up a state which holds the item definitions.
    */
@@ -32,7 +39,7 @@ function TouchBarComponent(props: TouchBarProps) {
   const id = React.useRef(props.id ?? uuid());
 
   /**
-   * Event emmiter serves as a way to subscribe to item actions. This way items
+   * Event emitter serves as a way to subscribe to item actions. This way items
    * can handle the event disposal/handler update themselves.
    */
   const emitter = React.useRef(new EventEmitter());
@@ -41,10 +48,19 @@ function TouchBarComponent(props: TouchBarProps) {
   );
 
   React.useEffect(() => {
+    // Check if not defined or "auto", then use auto detect
+    if (props.enabled === undefined || props.enabled === "auto") {
+      setEnabled(isElectron());
+    } else {
+      setEnabled(props.enabled);
+    }
+  }, []);
+
+  React.useEffect(() => {
     /**
      * Send the registered items to electron to construct the new TouchBar.
      */
-    ipcRenderer.send(IpcEvent.create, {
+    touchbarAPI.send(IpcEvent.create, {
       id: id.current,
       items,
       // @ts-expect-error - "private" property
@@ -55,14 +71,14 @@ function TouchBarComponent(props: TouchBarProps) {
      * Set-up and register item action handler. We only have one listener per
      * TouchBar instance.
      */
-    ipcRenderer.on(IpcEvent.itemAction, handleItemAction.current);
+    touchbarAPI.on(IpcEvent.itemAction, handleItemAction.current);
 
     return () => {
-      ipcRenderer.send(IpcEvent.destroy, {
+      touchbarAPI.send(IpcEvent.destroy, {
         id: id.current,
         prevId: props.prevId,
       });
-      ipcRenderer.removeListener(IpcEvent.itemAction, handleItemAction.current);
+      touchbarAPI.removeListener(IpcEvent.itemAction, handleItemAction.current);
     };
   }, [items]);
 
@@ -96,7 +112,7 @@ function TouchBarComponent(props: TouchBarProps) {
     );
 
     // Send to electron window
-    ipcRenderer.send(IpcEvent.updateitem, {
+    touchbarAPI.send(IpcEvent.updateitem, {
       parent: id.current,
       id: payload.id,
       props: payload.props,
@@ -109,6 +125,10 @@ function TouchBarComponent(props: TouchBarProps) {
     removeItem: removeItem.current,
     updateItem: updateItem.current,
   });
+
+  if (!enabled) {
+    return null;
+  }
 
   return (
     <TouchBarContext.Provider value={value.current}>
