@@ -13,14 +13,10 @@ export const preload = () => {
     on(channel, listener) {
       if (eventTypes.includes(channel)) {
         ipcRenderer.on(channel, listener);
+        // see https://github.com/electron/electron/issues/21437#issuecomment-880929111
+        return () => ipcRenderer.removeListener(channel, listener);
       }
-      return this;
-    },
-    removeListener(channel, listener) {
-      if (eventTypes.includes(channel)) {
-        ipcRenderer.removeListener(channel, listener);
-      }
-      return this;
+      return () => {};
     },
   };
 

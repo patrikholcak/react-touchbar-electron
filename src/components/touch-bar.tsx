@@ -71,14 +71,17 @@ function TouchBarComponent(props: TouchBarProps) {
      * Set-up and register item action handler. We only have one listener per
      * TouchBar instance.
      */
-    touchbarAPI.on(IpcEvent.itemAction, handleItemAction.current);
+    const cleanup = touchbarAPI.on(
+      IpcEvent.itemAction,
+      handleItemAction.current
+    );
 
     return () => {
       touchbarAPI.send(IpcEvent.destroy, {
         id: id.current,
         prevId: props.prevId,
       });
-      touchbarAPI.removeListener(IpcEvent.itemAction, handleItemAction.current);
+      cleanup();
     };
   }, [items]);
 

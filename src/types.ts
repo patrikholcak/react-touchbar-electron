@@ -47,9 +47,5 @@ export type IPCListenerFunction = (
 
 export interface TouchBarAPI {
   send: (channel: string, ...args: any[]) => void;
-  on: (channel: string, listener: IPCListenerFunction) => TouchBarAPI;
-  removeListener: (
-    channel: string,
-    listener: IPCListenerFunction
-  ) => TouchBarAPI;
+  on: (channel: string, listener: IPCListenerFunction) => () => void;
 }
