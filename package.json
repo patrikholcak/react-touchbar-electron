@@ -27,16 +27,16 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.7",
-    "electron": "^12.0.5",
+    "electron": "^18.2.3",
     "parcel": "^1.12.4",
     "react-router-dom": "^5.2.0",
-    "typescript": "^4.1.3"
+    "typescript": "^4.6.4"
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit --pretty",
     "example": "parcel example/index.html --port 1234 --out-dir example/.parcel",
     "electron": "npm run electron:main && electron example/.parcel/main.js",
-    "electron:main": "parcel build example/main.ts --out-dir example/.parcel --out-file main.js --target node"
+    "electron:main": "parcel build example/*.ts --out-dir example/.parcel --target node"
   }
 }

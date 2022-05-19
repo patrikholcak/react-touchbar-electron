@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "moduleResolution": "node",
-    "target": "ESNext",
+    "target": "ES2019",
     "module": "CommonJS",
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "esnext"],

@@ -204,7 +204,7 @@ export function decorateWindow(browserWindow: BrowserWindow) {
   });
 
   ipcMain.on(IpcEvent.updateitem, (_event, payload: UpdatePayload) => {
-    const item = touchBarInstances[payload.parent].items.find(
+    const item = touchBarInstances[payload.parent]?.items.find(
       (item) => item.id === payload.id
     );
 
